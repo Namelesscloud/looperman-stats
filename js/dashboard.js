@@ -1,9 +1,15 @@
+/* ============================================================
+   LOOPERMAN DASHBOARD — Namelessprod
+   Dépend de : js/data.js (loadHistory, PROFILE)
+   ============================================================ */
+
 /* ============================ UTILS ============================ */
 const $ = s => document.querySelector(s);
 const fmt = n => (n ?? 0).toLocaleString("fr-FR");
 const fmt1 = n => (n ?? 0).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const daysBetween = (a, b) => Math.max(1, Math.round((new Date(b) - new Date(a)) / 864e5));
 const dFR = d => new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+const safeDiv = (a, b) => (b ? a / b : null);
 
 let H = [];          // historique trié
 let charts = {};
@@ -17,10 +23,12 @@ function buildDeltas(hist) {
     const dDl = s.downloads - p.downloads;
     return {
       ...s,
-      dDl, dFav: s.favourites - p.favourites,
+      dDl,
+      dFav: s.favourites - p.favourites,
       dCom: s.comments - p.comments,
       dUp: s.uploads - p.uploads,
-      span, dlDay: dDl / span
+      span,
+      dlDay: dDl / span
     };
   });
 }
@@ -58,6 +66,7 @@ function isoWeek(d) {
   const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
   return `${t.getUTCFullYear()}-S${String(Math.ceil(((t - y0) / 864e5 + 1) / 7)).padStart(2, "0")}`;
 }
+
 function groupBy(mode) {
   const ds = dailySeries(H);
   const m = new Map();
@@ -77,13 +86,42 @@ function renderKpi() {
   const l = D[D.length - 1];
   const totalDays = daysBetween(PROFILE.joined, last.date);
 
+  const dlPerLoop   = safeDiv(last.downloads, last.uploads);
+  const comPerLoop  = safeDiv(last.comments, last.uploads);
+  const favRate     = safeDiv(last.favourites, last.downloads);
+  const upPerMonth  = safeDiv(last.uploads, totalDays / 30);
+  const dlAllTime   = safeDiv(last.downloads, totalDays);
+
   const cards = [
-    { label: "Uploads",            val: fmt(last.uploads),      sub: `${fmt1(last.uploads / (totalDays / 30))} / mois`, delta: l.dUp,  color: "v" },
-    { label: "Téléchargements",    val: fmt(last.downloads),    sub: `${fmt1(last.downloads / totalDays)} / jour (all-time)`, delta: l.dDl, color: "b" },
-    { label: "Favoris reçus",      val: fmt(last.favourites),   sub: `${((last.favourites / last.downloads) * 100).toFixed(2)} % des DL`, delta: l.dFav, color: "p" },
-    { label: "Commentaires reçus", val: fmt(last.comments),     sub: `${fmt1(last.comments / last.uploads)} / loop`, delta: l.dCom, color: "o" },
-    { label: "DL par loop",        val: fmt(Math.round(last.downloads / last.uploads)), sub: "moyenne", delta: null, color: "g" },
-    { label: "Ancienneté",         val: `${(totalDays / 365).toFixed(1)} ans`, sub: `${fmt(totalDays)} jours`, delta: null, color: "n" },
+    {
+      label: "Uploads", val: fmt(last.uploads),
+      sub: upPerMonth !== null ? `${fmt1(upPerMonth)} / mois` : "—",
+      delta: l.dUp, color: "v"
+    },
+    {
+      label: "Téléchargements", val: fmt(last.downloads),
+      sub: dlAllTime !== null ? `${fmt1(dlAllTime)} / jour (all-time)` : "—",
+      delta: l.dDl, color: "b"
+    },
+    {
+      label: "Favoris reçus", val: fmt(last.favourites),
+      sub: favRate !== null ? `${(favRate * 100).toFixed(2)} % des DL` : "—",
+      delta: l.dFav, color: "p"
+    },
+    {
+      label: "Commentaires reçus", val: fmt(last.comments),
+      sub: comPerLoop !== null ? `${fmt1(comPerLoop)} / loop` : "—",
+      delta: l.dCom, color: "o"
+    },
+    {
+      label: "DL par loop",
+      val: dlPerLoop !== null ? fmt(Math.round(dlPerLoop)) : "—",
+      sub: "moyenne", delta: null, color: "g"
+    },
+    {
+      label: "Ancienneté", val: `${(totalDays / 365).toFixed(1)} ans`,
+      sub: `${fmt(totalDays)} jours`, delta: null, color: "n"
+    },
   ];
 
   $("#kpiGrid").innerHTML = cards.map(c => `
@@ -101,10 +139,10 @@ function renderKpi() {
 function renderVelocity() {
   const rows = [
     { l: "Aujourd'hui / dernier relevé", d: 1 },
-    { l: "Moyenne 7 jours",  d: 7 },
-    { l: "Moyenne 14 jours", d: 14 },
-    { l: "Moyenne 30 jours", d: 30 },
-    { l: "Moyenne 90 jours", d: 90 },
+    { l: "Moyenne 7 jours",   d: 7 },
+    { l: "Moyenne 14 jours",  d: 14 },
+    { l: "Moyenne 30 jours",  d: 30 },
+    { l: "Moyenne 90 jours",  d: 90 },
     { l: "Moyenne 365 jours", d: 365 },
   ];
   const ref30 = avgOver(30);
@@ -205,7 +243,9 @@ function renderTable() {
 
   if (mode === "day") {
     const D = buildDeltas(H).slice().reverse();
-    tb.innerHTML = D.map(r => `
+    tb.innerHTML = D.map(r => {
+      const dpl = safeDiv(r.downloads, r.uploads);
+      return `
       <tr>
         <td class="mono">${dFR(r.date)}</td>
         <td>${fmt(r.uploads)}</td>
@@ -216,8 +256,9 @@ function renderTable() {
         <td class="${r.dFav > 0 ? "pos" : ""}">${r.dFav ? "+" + fmt(r.dFav) : "—"}</td>
         <td>${fmt(r.comments)}</td>
         <td class="${r.dCom > 0 ? "pos" : ""}">${r.dCom ? "+" + fmt(r.dCom) : "—"}</td>
-        <td>${fmt(Math.round(r.downloads / r.uploads))}</td>
-      </tr>`).join("") || `<tr><td colspan="10" class="muted">Aucune donnée</td></tr>`;
+        <td>${dpl !== null ? fmt(Math.round(dpl)) : "—"}</td>
+      </tr>`;
+    }).join("") || `<tr><td colspan="10" class="muted">Aucune donnée</td></tr>`;
   } else {
     const g = groupBy(mode).reverse();
     tb.innerHTML = g.map(r => `
@@ -247,11 +288,58 @@ function exportCsv() {
   a.click();
 }
 
+/* ==================== ETAT « PAS ASSEZ DE DONNEES » ==================== */
+function renderWaitingState() {
+  renderKpi();
+  renderTable();
+
+  $("#velocityGrid").innerHTML = `
+    <div class="vel" style="grid-column:1/-1">
+      <span class="vel-l">En attente de données</span>
+      <span class="vel-v muted">1 seul relevé</span>
+      <span class="vel-x">Les vitesses apparaîtront au 2ᵉ snapshot (demain matin).</span>
+    </div>`;
+
+  document.querySelectorAll(".chart-wrap").forEach(w => {
+    w.innerHTML = `<p class="muted" style="text-align:center;padding:2rem">
+      Graphique disponible dès le 2ᵉ relevé.</p>`;
+  });
+}
+
 /* ============================ INIT ============================ */
 (async function init() {
   const raw = await loadHistory();
   H = raw.slice().sort((a, b) => a.date.localeCompare(b.date));
 
+  if (!H.length) {
+    $("#kpiGrid").innerHTML = `<p class="muted">Aucune donnée disponible.</p>`;
+    return;
+  }
+
+  const last = H[H.length - 1];
+
+  // Éléments d'en-tête (toujours affichés)
+  $("#lastUpdate").textContent = dFR(last.date);
+  $("#snapCount").textContent = H.length;
+
+  // Listeners communs
+  $("#tableGroup").addEventListener("change", renderTable);
+  $("#exportCsv").addEventListener("click", exportCsv);
+
+  // Partage vers goals.html
+  const a30 = avgOver(30), a7 = avgOver(7);
+  localStorage.setItem("lm_last", JSON.stringify(last));
+  localStorage.setItem("lm_avg30", a30 ?? 0);
+  localStorage.setItem("lm_avg7", a7 ?? 0);
+  localStorage.setItem("lm_snapCount", H.length);
+
+  /* --- Moins de 2 snapshots : mode dégradé --- */
+  if (H.length < 2) {
+    renderWaitingState();
+    return;
+  }
+
+  /* --- Mode complet --- */
   renderKpi();
   renderVelocity();
   drawCumul("30");
@@ -260,20 +348,10 @@ function exportCsv() {
   drawGroup("#chartMonthly", "monthly", "month", "#b57bff");
   renderTable();
 
-  $("#lastUpdate").textContent = dFR(H[H.length - 1].date);
-  $("#snapCount").textContent = H.length;
-
   $("#rangeBtns").addEventListener("click", e => {
     if (e.target.tagName !== "BUTTON") return;
     [...e.currentTarget.children].forEach(b => b.classList.remove("active"));
     e.target.classList.add("active");
     drawCumul(e.target.dataset.range);
   });
-  $("#tableGroup").addEventListener("change", renderTable);
-  $("#exportCsv").addEventListener("click", exportCsv);
-
-  // Partage vers goals.html
-  localStorage.setItem("lm_last", JSON.stringify(H[H.length - 1]));
-  localStorage.setItem("lm_avg30", avgOver(30) ?? 0);
-  localStorage.setItem("lm_avg7", avgOver(7) ?? 0);
 })();
