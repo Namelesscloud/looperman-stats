@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Namelessprod — Looperman Stats</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="https://www.looperman.com/media/avatars/lrg/looperman-avatar-04055719.jpg" alt="avatar" class="avatar">
+    <div>
+      <h1>Namelessprod</h1>
+      <p class="sub">Loop Maker · Guitarist · Bordeaux, France</p>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html" class="active">Dashboard</a>
+    <a href="goals.html">Objectifs</a>
+    <a href="https://www.looperman.com/users/profile/4055719" target="_blank" rel="noopener">Profil ↗</a>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ====== KPI CARDS ====== -->
+  <section class="kpi-grid" id="kpiGrid"></section>
+
+  <!-- ====== VELOCITY ====== -->
+  <section class="panel">
+    <h2>Vélocité des téléchargements</h2>
+    <div class="velocity-grid" id="velocityGrid"></div>
+  </section>
+
+  <!-- ====== CHARTS ====== -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Évolution cumulée</h2>
+      <div class="range-btns" id="rangeBtns">
+        <button data-range="30" class="active">30 j</button>
+        <button data-range="90">90 j</button>
+        <button data-range="365">1 an</button>
+        <button data-range="all">Tout</button>
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="chartCumul"></canvas></div>
+  </section>
+
+  <section class="panel">
+    <h2>Téléchargements par jour</h2>
+    <div class="chart-wrap"><canvas id="chartDaily"></canvas></div>
+  </section>
+
+  <div class="two-col">
+    <section class="panel">
+      <h2>Moyenne par semaine</h2>
+      <div class="chart-wrap sm"><canvas id="chartWeekly"></canvas></div>
+    </section>
+    <section class="panel">
+      <h2>Moyenne par mois</h2>
+      <div class="chart-wrap sm"><canvas id="chartMonthly"></canvas></div>
+    </section>
+  </div>
+
+  <!-- ====== TABLE ====== -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Tableau détaillé</h2>
+      <div class="table-tools">
+        <select id="tableGroup">
+          <option value="day">Par jour</option>
+          <option value="week">Par semaine</option>
+          <option value="month">Par mois</option>
+        </select>
+        <button id="exportCsv" class="btn-ghost">Exporter CSV</button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table id="statsTable">
+        <thead>
+          <tr>
+            <th>Période</th>
+            <th>Uploads</th>
+            <th>DL cumulés</th>
+            <th>Δ DL</th>
+            <th>DL / jour</th>
+            <th>Favoris</th>
+            <th>Δ Fav</th>
+            <th>Comm.</th>
+            <th>Δ Comm.</th>
+            <th>DL / loop</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="foot">
+    Dernière mise à jour : <span id="lastUpdate">—</span> ·
+    <span id="snapCount">0</span> snapshots
+  </footer>
+
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

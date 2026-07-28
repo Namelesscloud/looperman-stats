@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Objectifs — Namelessprod</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="https://www.looperman.com/media/avatars/lrg/looperman-avatar-04055719.jpg" alt="" class="avatar">
+    <div><h1>Objectifs</h1><p class="sub">Suivi des paliers & projections</p></div>
+  </div>
+  <nav>
+    <a href="index.html">Dashboard</a>
+    <a href="goals.html" class="active">Objectifs</a>
+    <a href="https://www.looperman.com/users/profile/4055719" target="_blank" rel="noopener">Profil ↗</a>
+  </nav>
+</header>
+
+<main>
+
+  <section class="panel">
+    <h2>Rythme actuel</h2>
+    <div class="velocity-grid" id="paceGrid"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Objectifs de téléchargements</h2>
+      <button id="addGoal" class="btn">+ Nouvel objectif</button>
+    </div>
+    <div id="goalsDl" class="goals"></div>
+  </section>
+
+  <div class="two-col">
+    <section class="panel"><h2>Objectifs uploads</h2><div id="goalsUp" class="goals"></div></section>
+    <section class="panel"><h2>Objectifs favoris</h2><div id="goalsFav" class="goals"></div></section>
+  </div>
+
+  <section class="panel">
+    <h2>Projection sur 12 mois</h2>
+    <p class="hint">Basée sur la moyenne des 30 derniers jours. Les zones montrent un scénario pessimiste (−25 %) et optimiste (+25 %).</p>
+    <div class="chart-wrap"><canvas id="chartProj"></canvas></div>
+  </section>
+
+  <section class="panel">
+    <h2>Objectifs mensuels & hebdomadaires</h2>
+    <div class="table-scroll">
+      <table id="targetTable">
+        <thead><tr><th>Objectif</th><th>Requis / jour</th><th>Requis / semaine</th><th>Requis / mois</th><th>Actuel / jour</th><th>Écart</th><th>Statut</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h3>Nouvel objectif</h3>
+    <label>Métrique
+      <select id="mMetric">
+        <option value="downloads">Téléchargements</option>
+        <option value="uploads">Uploads</option>
+        <option value="favourites">Favoris</option>
+        <option value="comments">Commentaires</option>
+      </select>
+    </label>
+    <label>Valeur cible <input type="number" id="mTarget" placeholder="200000"></label>
+    <label>Libellé <input type="text" id="mLabel" placeholder="200K téléchargements"></label>
+    <label>Date limite (optionnel) <input type="date" id="mDeadline"></label>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="mCancel">Annuler</button>
+      <button class="btn" id="mSave">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/goals.js"></script>
+</body>
+</html>
